@@ -1,0 +1,54 @@
+[project]
+name = "gridworks-alert-manager"
+version = "0.1.0"
+description = "Alert management service."
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn>=0.30",
+    "google-auth>=2.0.0",
+    "gspread>=6.0.0",
+    "pendulum>=3.0.0",
+    "pydantic>=2.0",
+    "pydantic-settings>=2.0",
+    "python-dotenv>=1.0.0",
+    "requests>=2.32.3",
+]
+
+[project.scripts]
+gridworks-alert-manager = "alert_manager:main"
+gridworks-alert-manager-sheet = "alert_manager.google_sheet_reader:main"
+
+[dependency-groups]
+dev = [
+    "mypy>=1.13",
+    "pytest>=8.0",
+    "ruff>=0.8",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/alert_manager"]
+
+[tool.ruff]
+src = ["src", "tests"]
+exclude = [".git", ".mypy_cache", ".pytest_cache", ".ruff_cache", ".venv", "build", "dist"]
+
+[tool.ruff.lint]
+select = ["B", "E", "F", "I", "N", "UP", "W"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unreachable = true
+packages = ["alert_manager"]
+
+[[tool.mypy.overrides]]
+module = ["gspread.*", "google.*", "pendulum.*", "requests.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
