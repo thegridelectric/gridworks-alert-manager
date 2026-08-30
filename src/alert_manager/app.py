@@ -15,8 +15,6 @@ manager = AlertManager(settings)
 
 def require_token(authorization: str | None = Header(default=None)) -> None:
     expected = settings.api_token.get_secret_value()
-    if not expected:
-        return
     scheme, _, token = (authorization or "").partition(" ")
     if scheme.lower() != "bearer" or not secrets.compare_digest(token, expected):
         raise HTTPException(
@@ -44,8 +42,6 @@ async def _mute_cleanup_loop() -> None:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    if not settings.api_token.get_secret_value():
-        print("Warning: ALERT_MANAGER_API_TOKEN is not set")
     tasks = [
         asyncio.create_task(_active_alert_check_loop()),
         asyncio.create_task(_mute_cleanup_loop()),

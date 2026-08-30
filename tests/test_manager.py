@@ -78,6 +78,8 @@ def test_require_token_enforced_when_set(monkeypatch: pytest.MonkeyPatch) -> Non
     assert app_module.require_token("Bearer secret") is None
 
 
-def test_require_token_disabled_when_unset(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(app_module.settings, "api_token", SecretStr(""))
-    assert app_module.require_token(None) is None
+def test_require_token_always_required(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(app_module.settings, "api_token", SecretStr("secret"))
+    with pytest.raises(HTTPException):
+        app_module.require_token(None)
+    assert app_module.require_token("Bearer secret") is None
