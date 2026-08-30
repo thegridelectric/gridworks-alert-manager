@@ -1,0 +1,19 @@
+[Unit]
+Description=GridWorks alert manager (Telegram dispatch)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=alerts
+WorkingDirectory=/home/alerts/gridworks-alert-manager
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/home/alerts/gridworks-alert-manager/.venv/bin/gridworks-alert-manager
+Restart=always
+RestartSec=30
+# Hard memory ceiling: a runaway process kills only this unit, never the
+# box. Raise deliberately if the real working set grows past this.
+MemoryMax=512M
+
+[Install]
+WantedBy=multi-user.target

@@ -73,7 +73,7 @@ Copy `.env.example` to `.env` and fill it in. All variables use the `ALERT_MANAG
 | Variable | Default | Purpose |
 |----------|---------|---------|
 | `ALERT_MANAGER_TELEGRAM_BOT_TOKEN` | — | Bot token used to send alerts and poll reactions |
-| `ALERT_MANAGER_API_TOKEN` | — | Shared secret for `Authorization: Bearer` on `/new-alert`. If unset, auth is disabled (a warning is logged) |
+| `ALERT_MANAGER_API_TOKEN` | `dev-alert-token` | Shared secret for `Authorization: Bearer` on `/new-alert` and `/alerts-history`; always checked. Set a real one in production |
 | `ALERT_MANAGER_GOOGLE_SHEETS_SPREADSHEET_ID` | — | Spreadsheet with the `Schedule` and `Contacts` worksheets |
 | `ALERT_MANAGER_GOOGLE_CREDENTIALS_FILE` | `google-credentials.json` | Path to the Google service-account JSON (read-only access to the sheet) |
 | `ALERT_MANAGER_SCHEDULE_FILE` | `google-sheet.json` | Local cache of the schedule/contacts |
@@ -84,7 +84,7 @@ Copy `.env.example` to `.env` and fill it in. All variables use the `ALERT_MANAG
 | `ALERT_MANAGER_MAX_ALERT_COUNT` | `6` | Max sends per alert |
 | `ALERT_MANAGER_ESCALATE_AFTER_COUNT` | `3` | Escalate to all contacts once the count exceeds this |
 | `ALERT_MANAGER_MUTE_CLEAR_INTERVAL_SECONDS` | `86400` | How often the 👎-mute list is cleared |
-| `ALERT_MANAGER_HOST` / `ALERT_MANAGER_PORT` | `0.0.0.0` / `8000` | Bind address |
+| `ALERT_MANAGER_HOST` / `ALERT_MANAGER_PORT` | `127.0.0.1` / `8000` | Bind address. Loopback: only gwalert on the same box raises alerts; anything public goes through a TLS proxy in front of the GET routes |
 
 ## Google Sheets on-call setup
 
@@ -127,32 +127,20 @@ Refresh the cached on-call schedule manually (it is otherwise refreshed on each 
 uv run gridworks-alert-manager-sheet
 ```
 
-## Deploy (systemd)
+## Service
 
-```ini
-[Unit]
-Description=Alert manager
-After=network-online.target
-Wants=network-online.target
-
-[Service]
-Type=simple
-User=ubuntu
-WorkingDirectory=/home/ubuntu/gridworks-alert-manager
-Environment=PYTHONUNBUFFERED=1
-ExecStart=/home/ubuntu/gridworks-alert-manager/.venv/bin/gridworks-alert-manager
-Restart=on-failure
-RestartSec=30
-
-[Install]
-WantedBy=multi-user.target
-```
+[`service/alert-manager.service`](service/alert-manager.service) runs the
+manager from a checkout at `/home/alerts/gridworks-alert-manager` as the
+`alerts` user, with a `MemoryMax=512M` ceiling so a runaway process can only
+kill the service, never the host. Installing it needs root:
 
 ```bash
-sudo systemctl daemon-reload
-sudo systemctl enable --now gridworks-alert-manager
-sudo journalctl -u gridworks-alert-manager -f
+cp service/alert-manager.service /etc/systemd/system/
+systemctl daemon-reload
+systemctl enable --now alert-manager
 ```
+
+Logs: `journalctl -u alert-manager -f`. Update: `git pull && uv sync --frozen && sudo systemctl restart alert-manager`.
 
 ## Tests
 

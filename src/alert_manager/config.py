@@ -8,7 +8,9 @@ DEFAULT_ENV_FILE = ".env"
 
 class Settings(BaseSettings):
     telegram_bot_token: SecretStr = SecretStr("")
-    api_token: SecretStr = SecretStr("")
+    # Always checked on the write route; the dev default pairs with
+    # gwalert's. Production sets its own in .env.
+    api_token: SecretStr = SecretStr("dev-alert-token")
     google_sheets_spreadsheet_id: str = ""
     google_credentials_file: str = "google-credentials.json"
     schedule_file: str = "google-sheet.json"
@@ -19,7 +21,9 @@ class Settings(BaseSettings):
     check_interval_seconds: int = 30
     reminder_interval_seconds: int = 5 * 60
     mute_clear_interval_seconds: int = 24 * 60 * 60
-    host: str = "0.0.0.0"
+    # Loopback: only gwalert on this box may raise alerts. Reads that the
+    # web front end needs go through a TLS proxy in front of the GET routes.
+    host: str = "127.0.0.1"
     port: int = 8000
 
     model_config = SettingsConfigDict(
