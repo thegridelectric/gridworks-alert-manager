@@ -140,7 +140,12 @@ systemctl daemon-reload
 systemctl enable --now alert-manager
 ```
 
-Logs: `journalctl -u alert-manager -f`. Update: `git pull && uv sync --frozen && sudo systemctl restart alert-manager`.
+Logs: `journalctl -u alert-manager -f`.
+
+[`service/Caddyfile`](service/Caddyfile) is the TLS read façade: Caddy
+terminates HTTPS for the GET routes only (`/health`, `/alerts-history`);
+`POST /new-alert` stays loopback. Root installs it:
+`cp service/Caddyfile /etc/caddy/Caddyfile && systemctl reload caddy`. Update: `git pull && uv sync --frozen && sudo systemctl restart alert-manager`.
 
 ## Tests
 
