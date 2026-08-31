@@ -1,0 +1,14 @@
+# Read façade for the alert-manager: TLS at the edge, GET routes only.
+# The manager binds loopback; the write route (/new-alert) is never proxied.
+alerts.electricity.works {
+	@reads {
+		method GET
+		path /health /alerts-history*
+	}
+	handle @reads {
+		reverse_proxy 127.0.0.1:8000
+	}
+	handle {
+		respond 404
+	}
+}
