@@ -1,0 +1,9 @@
+# alert-manager convenience aliases — pure spelling over
+# systemctl/journalctl, no logic. Sourced from the box login's ~/.bashrc
+# at box setup; the sudoers drop-in (/etc/sudoers.d/alerts) grants
+# exactly these systemctl invocations.
+alias amstart='sudo systemctl start alert-manager'
+alias amstop='sudo systemctl stop alert-manager'
+alias amrestart='sudo systemctl restart alert-manager'
+alias amstatus='systemctl status alert-manager --no-pager'
+alias amlog='journalctl -u alert-manager -f'
